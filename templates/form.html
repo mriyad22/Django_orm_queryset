@@ -1,0 +1,22 @@
+{% extends 'master/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  {{ title }}
+{% endblock %}
+
+{% block content %}
+  <form method="post", enctype="multipart/form-data">
+    {% csrf_token %}
+    {{data |crispy}}
+
+    <button type="submit" class="btn btn-primary">{{btn}}</button>
+  </form>
+
+  <div class="mt-4">
+    {% if registe_page %}
+      <a href="{% url 'register_page' %}" class="btn btn-info">Don't have account!</a>
+    {% endif %}
+  </div>
+    
+{% endblock %}
