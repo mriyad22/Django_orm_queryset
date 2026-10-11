@@ -5,6 +5,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .forms import *
+from django.db.models import Q
 
 # Create your views here.
 
@@ -104,14 +105,23 @@ def update_profile(request):
 #------>job View
 
 def job_display(request):
+    keyword = request.GET.get('q', '').strip()
     if request.user.is_authenticated:
-        jobs = JobModel.objects.select_related('recruiter__user').filter(recruiter__user = request.user)
+        jobs = JobModel.objects.select_related('recruiter__user').filter(recruiter__user = request.user).order_by('-id')
     else:
         jobs = JobModel.objects.select_related('recruiter__user')
 
+    if keyword:
+        jobs = jobs.filter(
+            Q(title__icontains=keyword) |
+            Q(description__icontains=keyword)
+        )
+
+    
 
     con = {
         "data" : jobs,
+        "keyword" : keyword,
         'title' : 'display jobs'
     }
     return render(request, 'jobs.html', con)
