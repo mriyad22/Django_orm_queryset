@@ -9,6 +9,7 @@ class UserForm(UserCreationForm):
         fields = [
             'username',
             'email',
+            'user_type',
             'first_name',
             'last_name',
             'password1',
@@ -35,3 +36,11 @@ class JobForm(forms.ModelForm):
         widgets = {
             'deadline' : forms.DateInput(attrs={'type':'date'})
         }
+
+
+
+class JobApplyForm(forms.ModelForm):
+    class Meta: 
+        model = ApplicationModel
+        fields = '__all__'
+        exclude = ['applicant', 'job']

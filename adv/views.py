@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
@@ -82,16 +82,18 @@ def profile_view(request):
 
 @login_required
 def update_profile(request):
-    if request.method == 'POST':
-        form_data = RecruiterForm(request.POST)
-        if form_data.is_valid():
-            data = form_data.save(commit=False)
-            data.user = request.user
-            data.save()
-            messages.success(request, "profole updated")
-            return redirect('profile')
+    if request.user.user_type == "Recruiter":
 
-    form_data = RecruiterForm()
+        form_data = RecruiterForm()
+        if request.method == 'POST':
+            form_data = RecruiterForm(request.POST)
+            if form_data.is_valid():
+                data = form_data.save(commit=False)
+                data.user = request.user
+                data.save()
+                messages.success(request, "profole updated")
+                return redirect('profile')
+            
     con = {
         "data" : form_data,
         "title" : "profile update",
@@ -105,12 +107,15 @@ def update_profile(request):
 #------>job View
 
 def job_display(request):
-    keyword = request.GET.get('q', '').strip()
     if request.user.is_authenticated:
-        jobs = JobModel.objects.select_related('recruiter__user').filter(recruiter__user = request.user).order_by('-id')
+        if request.user.user_type == "Recruiter":
+            jobs = JobModel.objects.select_related('recruiter__user').filter(recruiter__user = request.user).order_by('-id').prefetch_related('applications')
+        else:
+            jobs = JobModel.objects.select_related('recruiter__user')
     else:
         jobs = JobModel.objects.select_related('recruiter__user')
 
+    keyword = request.GET.get('q', '').strip()
     if keyword:
         jobs = jobs.filter(
             Q(title__icontains=keyword) |
@@ -166,6 +171,12 @@ Here:
 
 @login_required
 def create_job(request):
+    recruiter = getattr(request.user, 'recruiter', None)
+
+    if not recruiter or not recruiter.is_profile_complete:
+        messages.warning(request, 'Please complete your recruiter profile first.')
+        return redirect('profile')
+
     if request.method == "POST":
         form_data = JobForm(request.POST)
         if form_data.is_valid():
@@ -182,3 +193,43 @@ def create_job(request):
         "btn" : 'Create'
     }
     return render(request, 'form.html', con)
+
+
+
+
+def job_application(request, a_id):
+    if not request.user.user_type == 'Seeker':
+        messages.success(request, "You can't apply")
+        return redirect('jobs')
+    
+    job = JobModel.objects.get(id = a_id)
+    if request.method == "POST":
+        form_data = JobApplyForm(request.POST, request.FILES)
+        if form_data.is_valid():
+            data = form_data.save(commit=False)
+            data.job = job
+            data.applicant = request.user
+            data.save()
+            messages.success(request, 'Apply successfully')
+            return redirect('jobs')
+        
+    form_data = JobApplyForm()
+    con = {
+        'data' : form_data,
+        'title' : 'Apply',
+        'btn' : 'Apply'
+    }
+    return render(request, 'form.html', con)
+
+
+
+
+def candidate_view(request, c_id):
+    application = get_object_or_404(JobModel, id = c_id)
+    candidate = ApplicationModel.objects.filter(job = application).select_related('applicant')
+
+    con = {
+        'data' : candidate,
+        'title' : 'candidata'
+    }
+    return render(request, "candidate.html", con)

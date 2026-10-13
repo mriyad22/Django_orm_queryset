@@ -1,0 +1,30 @@
+{% extends 'master/base.html' %}
+
+{% block title %} {{title}} {% endblock %}
+
+{% block content %}
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">SL</th>
+      <th scope="col">First</th>
+      <th scope="col">First</th>
+    </tr>
+  </thead>
+  {% for c in data %}
+  <tbody>
+    <tr>
+      <th scope="row">{{forloop.counter}}</th>
+      <td>{{c.applicant.first_name}} {{c.applicant.last_name}}</td>
+      <td>
+        <a href="{{c.resume.url}}">resume</a>
+      </td>
+    </tr>
+  </tbody>
+  {% endfor %}
+</table>
+  
+
+{% endblock %}
+

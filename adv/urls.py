@@ -17,4 +17,8 @@ urlpatterns = [
     #------> job url
     path('jobs/', job_display, name='jobs'),
     path('create-job/', create_job, name='create_job'),
+    path('apply/<int:a_id>/', job_application, name='apply'),
+
+    #-----> application url
+    path('candidate/<str:c_id>/', candidate_view, name="candidate")
 ]

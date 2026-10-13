@@ -6,16 +6,28 @@
 
 {% block content %}
   <div class="container">
-    <div class="card" style="width: 18rem;">
-      <div class="card-header"><b>Name: </b>{{request.user.first_name}} {{request.user.last_name}}</div>
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item"><b>Address:</b> {{request.user.recruiter.address}}</li>
-        <li class="list-group-item"><b>Email:</b> {{request.user.email}} </li>
-        <li class="list-group-item"><b>Phone:</b> {{request.user.recruiter.phone}} </li>
-        <li class="list-group-item">
-            <a href="{% url 'profile_update' %}" class="btn btn-info">Update</a>
-        </li>
-      </ul>
-    </div>
+    
+    {% if request.user.user_type == "Recruiter" %}
+      <div class="card" style="width: 18rem;">
+        <div class="card-header"><b>Name: </b>{{request.user.first_name}} {{request.user.last_name}}</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><b>Type:</b> {{request.user.user_type}} </li>
+          <li class="list-group-item"><b>Address:</b> {{request.user.recruiter.address}}</li>
+          <li class="list-group-item"><b>Email:</b> {{request.user.email}} </li>
+          <li class="list-group-item"><b>Phone:</b> {{request.user.recruiter.phone}} </li>
+          <li class="list-group-item">
+              <a href="{% url 'profile_update' %}" class="btn btn-info">Update</a>
+          </li>
+        </ul>
+      </div>
+    {% else %}
+      <div class="card" style="width: 18rem;">
+        <div class="card-header"><b>Name: </b>{{request.user.first_name}} {{request.user.last_name}}</div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><b>Email:</b> {{request.user.email}}</li>
+          <li class="list-group-item"><b>Type:</b> {{request.user.user_type}} </li>
+        </ul>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
